@@ -1,0 +1,20 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<!--
+Copyright (c) 2022 Sam Blenny
+SPDX-License-Identifier: MIT
+ -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>markab</title><style>
+html{-webkit-text-size-adjust:none;}
+html,body{min-height:100vh;width:100vw;background:#6A7F77;}
+html,body,canvas{margin:0;padding:0;box-sizing:border-box;}
+canvas{image-rendering:pixelated;overflow:auto;width:640px;height:400px;}
+#screen{grid-area:S;background:#ddd;}
+body{display:grid;
+grid:". . ." 20px
+     ". S ." auto
+     ". . ." 1fr / minmax(10px,1fr) auto minmax(10px,1fr);}
+</style></head><body>
+<canvas id="screen"></canvas>
+<script type="module" src="main.js"></script>
+</body></html>
