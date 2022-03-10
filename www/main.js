@@ -9,11 +9,11 @@ const WIDE = 320;  // Remember that canvas CSS width needs to be (SCALE*WIDE)
 const HIGH = 200;  // Remember that canvas CSS height needs to be (HIGH*WIDE)
 const SCREEN = document.querySelector('#screen');
 const CTX = SCREEN.getContext('2d');
-// The |0 is a perhaps redundant hint to the interpreter that these are meant as Uint32
-const CLEAR = 0x00000000 |0;
-const RED   = 0xff0000ff |0;
-const GREEN = 0x00ff00ff |0;
-const BLACK = 0x000000ff |0;
+// The >>>0 is a perhaps redundant hint to the interpreter that these are meant as Uint32
+const CLEAR = 0x00000000 >>>0;
+const RED   = 0xff0000ff >>>0;
+const GREEN = 0x00ff00ff >>>0;
+const BLACK = 0x000000ff >>>0;
 // Default foreground color
 let DEFAULT = BLACK;
 
@@ -71,14 +71,14 @@ function repaint() {
     // For testing purposes, allow blitting with mismatched source and destination
     // buffer sizes. But, slice long buffer to match pixel length of short buffer.
     // TODO: Make sure the buffer sizes match to begin with
-    const srcPx = src.length<<3;
-    const dstPx = dst.byteLength>>2;
+    const srcPx = src.length << 3;
+    const dstPx = dst.byteLength >>> 2;
     if (srcPx > dstPx) {
         console.warn("repaint(): framebuffer size mismatch! this is a bug.");
-        src = src.slice(0, dstPx>>3);
+        src = src.slice(0, dstPx >>> 3);
     } else if (dstPx > srcPx) {
         console.warn("repaint(): framebuffer size mismatch! this is a bug.");
-        dst = dst.slice(0, srcPx<<2);
+        dst = dst.slice(0, srcPx << 2);
     }
 
     // Blit with bit depth translation
