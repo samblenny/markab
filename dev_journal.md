@@ -7,11 +7,28 @@ Current task: build a WASM module from C with LLVM to generate a test
 pattern in the shared framebuffer.
 
 
-### Notes on Compiling C to WASM with only clang and Makefile:
+### Notes on compiling C to WASM with only clang and Makefile:
 
 References:
 - https://surma.dev/things/c-to-webassembly/
 - https://8bitworkshop.com/blog/misc/compiling-emulators-to-webassembly-without-emscripten.md.html
+- https://nullprogram.com/blog/2017/08/20/ ("A Tutorial on Portable Makefiles")
+- https://pubs.opengroup.org/onlinepubs/9699919799/utilities/make.html (POSIX make spec)
+- https://lld.llvm.org/WebAssembly.html (command line argument docs for lld wasm32 linker)
+- https://github.com/WebAssembly/tool-conventions/issues/64 (discussion on using lld arguments)
+
+
+#### POSIX Makefile notes
+
+The five internal macros:
+- `$@` : full target name of current target -- from `lib.a: file.c`, `$@` means `lib.a`
+- `$%` : for archive library members, from `lib.a(file.o)`, `$%` means `file.o`
+- `$?` : list of prereq's newer than current target
+- `$<` : for inference rule, `$<` is filename that triggered the rule (sorta like `$@`)
+- `$*` : current target minux its suffix
+
+
+#### LLVM compiler versions supporting wasm32 target
 
 Apple's build of clang for macOS does not support the wasm32 target, but
 apparently the homebrew build does? Have not personally verified that.

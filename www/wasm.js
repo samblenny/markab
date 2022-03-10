@@ -6,10 +6,12 @@ const wasmModule = "markab.wasm";
 const wide = 320;
 const high = 200;
 
-// Load WASM module, bind shared memory, then invoke callback
+// Load WASM module, bind shared memory, then invoke callback. By default,
+// when linking wasm32 with LLVM's lld, it expects the magic name `env` in the
+// import object.
 export function loadModule(callback) {
     var importObject = {
-		js: { js_trace: (code) => { console.log("wasm trace code:", code); }, },
+	env: { js_trace: (code) => { console.log("wasm trace code:", code); }, },
     };
     if ("instantiateStreaming" in WebAssembly) {
         // Modern browsers should support this
