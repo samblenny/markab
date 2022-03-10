@@ -7,7 +7,7 @@ Current task: build a WASM module from C with LLVM to generate a test
 pattern in the shared framebuffer.
 
 
-### Notes on Compile C to WASM with only clang and Makefile:
+### Notes on Compiling C to WASM with only clang and Makefile:
 
 References:
 - https://surma.dev/things/c-to-webassembly/
