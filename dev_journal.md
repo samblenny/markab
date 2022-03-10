@@ -7,6 +7,40 @@ Current task: build a WASM module from C with LLVM to generate a test
 pattern in the shared framebuffer.
 
 
+### Notes on Compile C to WASM with only clang and Makefile:
+
+References:
+- https://surma.dev/things/c-to-webassembly/
+- https://8bitworkshop.com/blog/misc/compiling-emulators-to-webassembly-without-emscripten.md.html
+
+Apple's build of clang for macOS does not support the wasm32 target, but
+apparently the homebrew build does? Have not personally verified that.
+
+Check clang targets of Apple's clang v13 build (wasm32 not included):
+```
+$ clang --print-targets | grep 'x86\|wasm'
+    x86        - 32-bit X86: Pentium-Pro and above
+    x86-64     - 64-bit X86: EM64T and AMD64
+```
+
+Check clang v11 targets on Debian 11:
+```
+$ clang --print-targets | grep wasm
+    wasm32     - WebAssembly 32-bit
+    wasm64     - WebAssembly 64-bit
+```
+
+Check clang v11 targets on Raspbian Buster:
+```
+$ clang-11 --print-targets | grep wasm
+    wasm32     - WebAssembly 32-bit
+    wasm64     - WebAssembly 64-bit
+```
+Note that on Buster, `/usr/bin/clang` is clang v7, which is too old. But,
+Buster has clang v11 as a package. You just have to `sudo apt install clang-11`
+and then invoke it as `clang-11`.
+
+
 ## 2022-03-09: Shared WASM & JS framebuffer
 
 Worked on the javascript side of the display HAL. Basic arrangement is:
