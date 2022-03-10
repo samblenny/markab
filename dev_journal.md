@@ -1,9 +1,24 @@
 # Markab Dev Journal
 
+Tasks to maybe do soon:
+- [ ] Add font and write function to paint UTF-8 strings
+- [ ] Better wasm<-->js interface for frame buffer dimensions
+- [ ] Convert framebuffer to use 2-bits per pixel
+- [ ] Better way to configure color palette themes
+- [ ] Interrupt handler and state machine for keyboard input
+- [ ] Interrupt handler and state machine for pointer input
+- [ ] Primitive painting app
+- [ ] REPL interface with line editor, history, and scrolling
+- [ ] Block editor interface
+- [ ] Block editor non-volatile storage (drag'n'drop import/export?)
+
 
 ## 2022-03-10: Makefile for new WASM module
 
-Current task: build a WASM module from C with LLVM to generate a test
+Update: the new WASM module works. It draws a test pattern with a binary
+counter. Demo is at https://samblenny.github.io/markab/www/
+
+Today's task: build a WASM module from C with LLVM to generate a test
 pattern in the shared framebuffer.
 
 
@@ -25,7 +40,7 @@ The five internal macros:
 - `$%` : for archive library members, from `lib.a(file.o)`, `$%` means `file.o`
 - `$?` : list of prereq's newer than current target
 - `$<` : for inference rule, `$<` is filename that triggered the rule (sorta like `$@`)
-- `$*` : current target minux its suffix
+- `$*` : current target minus its suffix
 
 
 #### LLVM compiler versions supporting wasm32 target
