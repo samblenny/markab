@@ -31,31 +31,25 @@ var wasmShared;
 var wasmExports;
 var wasmInstanceReady = false;
 
-// UTF8 decoder
-let decoder = new TextDecoder();
+// Framebuffer as subarray of wasm shared memory
+var fb_bytes = null;
 
 // Callback to initialize shared memory IPC bindings once WASM module is instantiated
 function initSharedMemBindings(result) {
     wasmExports = result.instance.exports;
     wasmShared = new Uint8Array(wasmExports.memory.buffer);
     wasmInstanceReady = true;
+    // Now that wasm module is loaded, make an array slice for the shared framebuffer
+    // The >>>3 to divide by 8 is because 8 pixels are packed into each byte
+    const fb_size = (wide * high) >>>3;
+    let fb_ptr = wasmExports.frame_buf_ptr();
+    fb_bytes = wasmShared.subarray(fb_ptr, fb_ptr + fb_size);
 }
 
 export function init() {
-    if (wasmExports && "init" in wasmExports) {
-        wasmExports.init();
-    } else {
-        console.error("wasm.init() failure: perhaps HTTP 404 on .wasm file?");
-    }
+    wasmExports.init();
 }
 
 export function frameBuf() {
-    if (!wasmInstanceReady) {
-        console.error("wasm.frameBuf() failure: perhaps HTTP 404 on .wasm file?");
-        return;
-    }
-    const size = wide * high;
-    let start = wasmExports.frame_buf_ptr();
-    let bytes = wasmShared.subarray(start, start + size);
-    return bytes;
+    return fb_bytes;
 }

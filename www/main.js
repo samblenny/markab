@@ -30,7 +30,6 @@ function initCanvas(wide, high, scale) {
     SCREEN.style.width = (wide * scale / pixelRatio) + 'px';
     SCREEN.style.height = (high * scale / pixelRatio) + 'px';
     CTX.scale(scale, scale);
-    clearScreen(wide, high);
     // Draw test pattern that should quickly be replaced as soon as wasm loads
     drawStripes(wide, high, RED);
 }
@@ -40,23 +39,23 @@ function initWASM() {
     repaint();
 }
 
-function clearScreen(wide, high) {
-    CTX.clearRect(0, 0, wide, high);
+// Yield values from an endless sequence of 10 clear pixels, then 1 red pixel
+function* stripeGenerator() {
+    const c = CLEAR;
+    while (true) {
+        for (const rgba of [c, c, c, c, c, c, c, c, c, c, RED]) {
+            yield rgba;
+        }
+    }
 }
 
 // Make an ugly test pattern that's intended for testing JS side of painting to canvas
 function drawStripes(wide, high, rgba) {
     let imgData = CTX.getImageData(0, 0, wide, high);
     let dv = new DataView(imgData.data.buffer);
-    let n = 0;
+    let gen = stripeGenerator();
     for (let i=0; i<dv.byteLength; i=i+4) {
-        if (n == 10) {
-            dv.setUint32(i, rgba);
-            n = 0;
-        } else {
-            dv.setUint32(i, 0);
-            n = n + 1;
-        }
+        dv.setUint32(i, gen.next().value);
     }
     CTX.putImageData(imgData, 0, 0);
 }
@@ -68,17 +67,12 @@ function repaint() {
     let dst = new DataView(imgData.data.buffer);  // 32-bit per pixel RGBA
     let src = wasm.frameBuf();                    // 1-bit per pixel monochrome
 
-    // For testing purposes, allow blitting with mismatched source and destination
-    // buffer sizes. But, slice long buffer to match pixel length of short buffer.
-    // TODO: Make sure the buffer sizes match to begin with
+    // Throw an exception if the source and destination buffer sizes don't match
     const srcPx = src.length << 3;
     const dstPx = dst.byteLength >>> 2;
-    if (srcPx > dstPx) {
+    if (srcPx !== dstPx) {
         console.warn("repaint(): framebuffer size mismatch! this is a bug.");
-        src = src.slice(0, dstPx >>> 3);
-    } else if (dstPx > srcPx) {
-        console.warn("repaint(): framebuffer size mismatch! this is a bug.");
-        dst = dst.slice(0, srcPx << 2);
+        throw "buffer size mismatch";
     }
 
     // Blit with bit depth translation
