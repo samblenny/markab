@@ -2,7 +2,7 @@
 
 Tasks to maybe do soon:
 - [ ] Add font and write function to paint UTF-8 strings
-- [ ] Better wasm<-->js interface for frame buffer dimensions
+- [x] Better wasm<-->js interface for frame buffer dimensions
 - [ ] Convert framebuffer to use 2-bits per pixel
 - [ ] Better way to configure color palette themes
 - [ ] Interrupt handler and state machine for keyboard input
