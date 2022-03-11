@@ -3,10 +3,8 @@
 //
 #include <stdint.h>
 
-// Framebuffer dimensions
-#define FB_WIDE (320)
-#define FB_HIGH (200)
-#define FB_SIZE (FB_WIDE * FB_HIGH)
+// The relies on -Wl,--allow-undefined and linking by wasm loader
 
-// This relies on -Wl,--allow-undefined + wasm loader
-void js_trace(int code);
+void js_trace(uint32_t code);
+
+void set_fb_config(uint32_t wide, uint32_t high, uint32_t deep, uint8_t zoom);
