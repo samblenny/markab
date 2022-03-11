@@ -62,6 +62,63 @@ Frame buffer configuration registers:
 - FB_ZOOM: scaling factor to be applied by the display driver, "zoom"
 
 
+### Links (handling wasm-js shared memory, CSS scaling for html canvas, js shifts, etc.):
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView/getUint32
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView/getUint8
+- https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext#parameters
+- https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/scale
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unsigned_right_shift
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Right_shift
+
+
+### Debugging the framebuffer code
+
+I started off just exporting a function from the wasm module to return a
+pointer to the FB_BYTES framebuffer array. That worked. It was simple. Easy.
+Reliable...
+
+So, of course, I decided that instead I should export the FB_BYTES and FB_SIZE
+symbols and let the javascript wasm loader link against them. Perhaps a big
+mistake? This is turning into an epic quest. Seems like the exports are
+pointers, so I need to figure out how to dereference them properly into the
+wasm shared memory buffer. That's turning into a major hassle. I can see the
+correct values in the shared buffer when I dump them to the console log, but my
+code comes back with the wrong values. Maybe there's some kind of weird
+endianness or off by one thing happening?
+
+Anyhow, along the way, as I'm flailing around trying to make sure I'm
+initializing the frame buffer with values that will be recognizable if I access
+them by with the wrong alignment or endianness from javascript, LLVM clang and
+lld decided they wanted to optimize some of my code by linking against
+`memset`. So... yay! Now I get to do a side quest to implement memset!
+
+Took me a while to discover the expected function signature and now to make it
+work. The console log showed a wasm module initialization error about missing
+memset in 'env', which is the object LLD expects to link against. Chrome
+DevTools disassembly for the wasm module showed it wanted to find:
+
+```
+(import "env" "memset") (param i32 i32 i32) (result i32)
+```
+
+I thought maybe I could convince clang and llvm to skip that import by
+providing a `void * memset(void * dest, int val, int len)` function in C. But,
+I wasn't able to get that working. I don't understand very well about the
+details of how LLVM handles intrinsic functions, linking against stdlib, or
+whatever it was attempting to accomplish. I brought this on myself by supplying
+the `-Os`, `-nostdlib` and `-Wl,--allow-undefined` flags to clang. But, those
+are kinda important for getting the wasm module to work. There's probably a more
+subtle combination of linker flags to suppress the optimization that wanted to
+link memset. But, for now, that's still a mystery.
+
+Workaround is to just provide the silly javascript memeset implementation to
+make the linker happy. This works: `function memset(dest, val, len) {...}`.
+
+**Update:** Turns out it was indeed an endianness problem like I suspected. I
+failed to read the docs for DataView.getUint32() carefully enough. Turns out it
+defaults big-endian unless you pass `true` for the optional `littleEndian` arg.
+
+
 ## 2022-03-10: Makefile for new WASM module
 
 Update: the new WASM module works. It draws a test pattern with a binary
