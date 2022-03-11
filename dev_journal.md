@@ -13,6 +13,55 @@ Tasks to maybe do soon:
 - [ ] Block editor non-volatile storage (drag'n'drop import/export?)
 
 
+## 2022-03-11: Rework Framebuffer Interface
+
+Working on defining a good framebuffer interface between wasm and js.
+
+Decided to arbitrarily start with the constraint of a 64KB maximum video ram
+size ("the framebuffer") and let everything else follow from there. The choice
+of 64KB is meant to accommodate a byte addressable pixel buffer on a stack
+machine with 16-bit address bus width. I'm thinking that the video ram could
+go on its own bus, separate from regular program memory.
+
+Would like to leave the door open to supporting different types of video modes.
+
+Current configuration for testing is medium sized, medium DPI LCD monitor with
+simulated display hardware of html canvas with 2x CSS scaling ("2x zoom"). This
+gives convenient readability and a mildly pixelated look. Maybe the zoom could
+be adjustable between 1x, 2x, and 4x to accommodate different hardware display
+sizes and DPI ratios.
+
+Constellation of uses I would like to potentially support:
+
+1. Monochrome 1-bit per pixel to cover small hardware devices or large display
+   areas on a PC. This could work for making a big text editor, or perhaps a
+   cheap hardware synth/sequencer with a Cortex M0/M4 dev board and OLED or LCD
+   from Adafruit. Resolutions could range from as small as 128x32 or 128x64 on
+   cheap OLED up to 1024x512 on laptop or PC.
+
+2. Uxn compatibility mode with 2-bits per pixel that could be implemented on
+   lots of different hardware. This could handle up to 640x400 with 4 colors,
+   supporting uses like text editor with color syntax highlighting, game with
+   kinda big map, painting moderately big images, and so on.
+
+3. Color picker mode with ability to display many colors at once for the
+   purpose of building themes and color palettes. Assuming 8-bits per pixel,
+   this could support resolution of up to 256x256. With 4-bits per pixel, the
+   resolution could be up to 360x360.
+
+To do all this, the data structure on the wasm side could look like...
+
+Frame buffer:
+- FB_BYTES: array of uint8_t[65536], "the video ram", "the framebuffer"
+- FB_SIZE: 65536
+
+Frame buffer configuration registers:
+- FB_WIDE: pixels per horizontal line (limit of X axis)
+- FB_HIGH: vertical lines per screen (limit of Y axis)
+- FB_DEEP: pixel bit depth in units of bits per pixel
+- FB_ZOOM: scaling factor to be applied by the display driver, "zoom"
+
+
 ## 2022-03-10: Makefile for new WASM module
 
 Update: the new WASM module works. It draws a test pattern with a binary
