@@ -8,9 +8,12 @@ creation environment. These are early days. Not much is working yet.
 
 Dev journal is here in case you want to follow along with progress:
 
-- https://samblenny.github.io/markab/dev_journal.md (plain text)
+- https://samblenny.github.io/markab-dev-journal/ (html with links to raw *.md)
 
-- [dev_journal.md](dev_journal.md) (rendered html)
+- https://github.com/samblenny/markab-dev-journal (github's *.md browser)
+
+2022-03-12: Previously, I had all the entries in one file in this repo, but
+that file was getting too big, so I set up a new repo just for the dev journal.
 
 
 ## WASM Demo Page
