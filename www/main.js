@@ -84,9 +84,10 @@ function* stripeGenerator() {
 function drawStripes(wide, high, rgba) {
     let imgData = CTX.getImageData(0, 0, wide, high);
     let dv = new DataView(imgData.data.buffer);
+    const littleEndian = true;
     let gen = stripeGenerator();
     for (let i=0; i<dv.byteLength; i=i+4) {
-        dv.setUint32(i, gen.next().value);
+        dv.setUint32(i, gen.next().value, littleEndian);
     }
     CTX.putImageData(imgData, 0, 0);
 }

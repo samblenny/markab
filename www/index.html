@@ -19,7 +19,8 @@ html,body,div,canvas,p{margin:0;padding:0;box-sizing:border-box;}
 canvas{image-rendering:pixelated;overflow:auto;}
 #screen, #drives{height:var(--SY);}
 #screen{grid-area:S;width:var(--SX);background:var(--C1);}
-#bezel{grid-area:B;border:var(--B0) solid var(--C2);border-radius:var(--R0);}
+#bezel{grid-area:B;border:var(--B0) solid var(--C2);border-radius:var(--R0);
+  line-height:0;}
 #drives{grid-area:D;background:var(--C3);width:var(--DX);}
 #console{grid-area:C;display:grid;grid: "B D" auto / auto var(--DX);
   background:var(--C3);border:var(--B1) solid var(--C3);
