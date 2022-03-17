@@ -7,10 +7,10 @@ SPDX-License-Identifier: MIT
 <meta name="description" content="Markab WASM demo page">
 <title>markab</title><style>
 :root{
-/* colors       */ --C0:#bA8Fb7;--C1:#ddd;--C2:#222;--C3:#857580;--C4:1c1c1c;
-/* border       */ --B0:15px;--R0:10px; --B1:15px;
-/* canvas sizes */ --SX:640px;--SY:400px; --DX:30ch;
-/* font sizes   */ --F0:12px;
+--C0:#bA8Fb7;--C1:#ddd;--C2:#222;--C3:#857580;--C4:1c1c1c;
+--B0:15px;--R0:10px; --B1:15px;
+--SX:640px;--SY:400px; --DX:30ch;
+--F0:12px;
 }
 html{-webkit-text-size-adjust:none;}
 html,body{min-height:100vh;width:100vw;background:var(--C0);
@@ -45,5 +45,5 @@ grid:". . ." 20px
     <p id="slot4">slot 4</p>
   </div>
 </div>
-<script type="module" src="main.js"></script>
+<script type="module" src="main.js" async></script>
 </body></html>
