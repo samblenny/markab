@@ -27,20 +27,22 @@ var wasmExports;
 var FB_BYTES = new Uint8Array([]);
 var FB_SIZE  = 0;
 
+// Double buffer for painting new frames
+var FB_DBLBUF;
+
 // Framebuffer configuration registers (latched by setFBConfig)
-var FB_WIDE = 320;
-var FB_HIGH = 200;
-var FB_DEEP = 1;
-var FB_ZOOM = 2;
+var WIDE = 320;
+var HIGH = 200;
+var DEEP = 1;
+var ZOOM = 2;
 
 /**
  *  Module Entry Point
  */
 
 // Prepare the canvas element and load the wasm module
-resizeCanvas(FB_WIDE, FB_HIGH, FB_ZOOM);
-let loadSuccessCallback = () => { wasmInit(); repaint(); };
-wasmloadModule(loadSuccessCallback);
+resizeCanvas(WIDE, HIGH, ZOOM);
+wasmloadModule(() => {wasmExports.init(); repaint();});
 
 /**
  *  Function Defs
@@ -48,33 +50,30 @@ wasmloadModule(loadSuccessCallback);
 
 // Configure the canvas element to match a new framebuffer configuration
 function resizeCanvas(wide, high, zoom) {
-    console.log("resizeCanvas", wide, high, zoom);
-    // Pixel ratio correction factor prevents blurring on displays with non-integer dpi-ratio
+    // Prevent blurring on displays with non-integer dpi-ratio
     let pixelRatio = window.devicePixelRatio || 1;
     SCREEN.width = wide;
     SCREEN.height = high;
     SCREEN.style.width = (wide * zoom / pixelRatio) + 'px';
     SCREEN.style.height = (high * zoom / pixelRatio) + 'px';
     CTX.scale(zoom, zoom);
+    // Start with a blank double buffer of matching size
+    FB_DBLBUF = CTX.createImageData(wide, high);
 }
 
 // Paint the frame buffer (wasm shared memory) to the screen (canvas element)
 function repaint() {
     // Adapt to current frambuffer configuration on the wasm side
-    const wide = FB_WIDE;
-    const high = FB_HIGH;
-    const deep = FB_DEEP;
-    const src_length = (wide >>> (4-deep)) * high;
-    if (deep !== 1 || src_length > 65535) {
-        console.warn("FB config out of range", wide, high, deep, src_length);
+    const src_length = (WIDE >>> (4-DEEP)) * HIGH;
+    if (DEEP !== 1 || src_length > 65535) {
+        console.warn("FB config out of range", WIDE, HIGH, DEEP, src_length);
         throw "repaint 1";
     }
     // Trim source array to match framebuffer config
     let src = FB_BYTES.slice(0, src_length);
 
     // Set up destination to match source
-    let imgData = CTX.getImageData(0, 0, wide, high);
-    let dst = new DataView(imgData.data.buffer);  // 32-bit per pixel RGBA
+    let dst = new DataView(FB_DBLBUF.data.buffer);  // 32-bit per pixel RGBA
 
     // Blit with bit depth translation
     const palette = [BLACK, GREEN];
@@ -92,7 +91,7 @@ function repaint() {
         dst.setUint32(i +28, palette[(s >>> 7) & 1], true);
         i = i + 32;
     }
-    CTX.putImageData(imgData, 0, 0);
+    CTX.putImageData(FB_DBLBUF, 0, 0);
 }
 
 /**
@@ -129,7 +128,6 @@ function wasmloadModule(callback) {
 
 // Silly memset because sometimes LLVM wants to link the wasm module against this
 function memset(dest, val, len) {
-    console.log("memset", dest, val, len);
     let wasmU8 = new Uint8Array(wasmExports.memory.buffer);
     for (let i=dest; i<dest+len; i++) {
         wasmU8[i] = val;
@@ -149,28 +147,25 @@ function initSharedMemBindings(result) {
     const fb_size_ptr  = wasmExports.FB_SIZE.value;
     const littleEndian = true;
     FB_SIZE = wasmDV.getUint32(fb_size_ptr, littleEndian);
-    console.log("initSharedMemBindings fb_size_ptr:", fb_size_ptr, "FB_SIZE:", FB_SIZE);
     FB_BYTES = wasmBufU8.subarray(fb_bytes_ptr, fb_bytes_ptr + FB_SIZE);
 }
 
 // Set the frame buffer configuration registers. (this gets called by wasm module)
-// Arbitrarily assert that frame buffer max is 64KB and enforce that:
-//   ((wide * high) >>> (4-deep)) <= 65535  (meaning it fits in 16 bit address space)
-// Units for deep are bits per pixel.
 function setFBConfig(wide, high, deep, zoom) {
-    console.log("setFBConfig", wide, high, deep, zoom);
-    const condition1 = wide > 1024 || high > 512;
-    const condition2 = deep < 1 || deep > 3;
-    const condition3 = ((wide >>> (4-deep)) * high) > 65535;
-    const condition4 = zoom < 1 || zoom > 3;
-    if (condition1 || condition2 || condition3 || condition4) {
+    const cond1 = wide > 1024 || high > 512;
+    const cond2 = deep < 1 || deep > 3;
+    const cond3 = ((wide >>> (4-deep)) * high) > 65535;
+    const cond4 = zoom < 1 || zoom > 3;
+    if (cond1 || cond2 || cond3 || cond4) {
         console.warn("unsupported frame buffer config", wide, high, deep, zoom);
         throw "setFBConfig";
     }
-    FB_WIDE = wide;
-    FB_HIGH = high;
-    FB_DEEP = deep;
-    FB_ZOOM = zoom;
+    WIDE = wide;
+    HIGH = high;
+    DEEP = deep;
+    ZOOM = zoom;
+    // Make a new double buffer with new dimensions
+    FB_DBLBUF = CTX.createImageData(wide, high);
 }
 
 function wasmInit() {
