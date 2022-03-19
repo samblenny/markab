@@ -8,12 +8,12 @@ creation environment. These are early days. Not much is working yet.
 
 Dev journal is here in case you want to follow along with progress:
 
-- https://samblenny.github.io/markab-dev-journal/ (html with links to raw *.md)
+- https://samblenny.github.io/markab-dev-journal/
 
-- https://github.com/samblenny/markab-dev-journal (github's *.md browser)
-
-2022-03-12: Previously, I had all the entries in one file in this repo, but
-that file was getting too big, so I set up a new repo just for the dev journal.
+This is mostly process documentation with me taking notes and thinking out loud
+about work in progress. So far there are research links, emacs tricks, some
+process stuff about generating static html with Pandoc, thinking through how to
+bootstrap a Forth system, and so on.
 
 
 ## WASM Demo Page
